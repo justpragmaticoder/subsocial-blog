@@ -1,0 +1,46 @@
+version: "3.7"
+
+networks:
+  local-net:
+    driver: bridge
+services:
+#  app:
+#    container_name: app
+#    build:
+#      context: .
+#      dockerfile: docker/Dockerfile
+#      args:
+#        - PORT=${APP_PORT}
+#    user: node
+#    working_dir: /usr/src/app
+#    env_file:
+#      - .env.app-config.local
+#    volumes:
+#      - ./src:/dist/src
+#    ports:
+#      - ${APP_PORT}:${APP_PORT}
+#    depends_on:
+#      - db
+#    networks:
+#      - local-net
+
+  db:
+    image: mysql:5.7
+    container_name: blog_db
+    command: --default-authentication-plugin=mysql_native_password --sql-mode=""
+#    networks:
+#      - local-net
+    env_file:
+      - .env.app-config.local
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    ports:
+      - ${EXPOSE_DATABASE}:3306
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+#      - ./db-dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
