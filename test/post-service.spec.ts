@@ -40,7 +40,7 @@ describe('PostService', () => {
   });
 
   describe('createPost', () => {
-    it('should return an array of cats', async () => {
+    it('should return a newly created post', async () => {
       expect(await postService.createPost(inputMock)).toBe(resultMock);
     });
   });

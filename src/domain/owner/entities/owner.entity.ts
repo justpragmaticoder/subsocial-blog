@@ -23,6 +23,9 @@ export class OwnerEntity implements IOwner {
   @Column({ name: 'ownerId', type: 'varchar', length: 48 })
   ownerId: string;
 
+  @Column({ name: 'nickname', type: 'varchar', length: 50, nullable: true })
+  nickname: string;
+
   @OneToMany(() => PostEntity, (post) => post.owner, {
     persistence: false,
     cascade: false,

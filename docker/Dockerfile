@@ -12,6 +12,7 @@ RUN npm run build
 COPY wait-for.sh ./
 RUN chmod +x wait-for.sh
 
+# It is a small try to wait for a mysql container to be ready before app.
 ENTRYPOINT [ "/bin/bash", "-c" ]
 CMD ["wait-for.sh"]
 

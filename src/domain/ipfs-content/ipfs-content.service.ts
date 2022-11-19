@@ -1,6 +1,6 @@
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { IPFSContentEntity } from './entity/ipfs-content.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { ICreateIPFSContentInput, IIPFSContent, IIPFSContentForSync } from './interfaces';
@@ -16,7 +16,7 @@ export class IPFSContentService extends TypeOrmQueryService<IPFSContentEntity> {
   /**
    * So small value for test purposes only
    */
-  private readonly DEFAULT_LIMIT = 2;
+  private readonly DEFAULT_LIMIT = 1;
 
   constructor(
     @InjectRepository(IPFSContentEntity) repo: Repository<IPFSContentEntity>,
@@ -111,8 +111,21 @@ export class IPFSContentService extends TypeOrmQueryService<IPFSContentEntity> {
       throw new Error(errorMessage);
     }
 
-    await this.createIPFSContentIfNotExist({ block, folderCid });
-    await this.updateContentWithSyncIdentifiers(input);
+    const queryRunner = await getConnection().createQueryRunner();
+    await queryRunner.startTransaction();
+
+    try {
+      await this.createIPFSContentIfNotExist({ block, folderCid });
+      await this.updateContentWithSyncIdentifiers(input);
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(error);
+      throw new Error(error);
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async updateContentWithSyncIdentifiers(input: {
@@ -139,17 +152,9 @@ export class IPFSContentService extends TypeOrmQueryService<IPFSContentEntity> {
   }
 
   public async createIPFSContentIfNotExist(input: ICreateIPFSContentInput): Promise<IIPFSContent | null> {
-    const IPFSContent: IPFSContentEntity = await this.repo.findOne({ block: input.block, folderCid: input.folderCid });
+    const targetIPFSContentCount: number = await this.repo.count({ block: input.block, folderCid: input.folderCid });
 
-    /**
-     * I don't have a lot of knowledge in IPFS domain.
-     * That's why it will show for me if there is a possibility of having different folderCid for the same block
-     * (duplicates by block value)
-     */
-    if (IPFSContent && IPFSContent.folderCid !== input.folderCid) {
-      this.logger.error(
-        `[${this.createIPFSContentIfNotExist.name}] Existing block: ${IPFSContent.block}, folderCid: ${IPFSContent.folderCid} and incoming block: ${input.block}, folderCid: ${input.folderCid}`
-      )
+    if (targetIPFSContentCount > 0) {
       return null;
     }
 

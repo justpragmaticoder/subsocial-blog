@@ -13,6 +13,6 @@ export class FindPostsResponseDto implements IFindPostsResponse {
   @Field(() => Number)
   readonly totalCount: number;
 
-  @Field(() => PostDto)
+  @Field(() => [PostDto])
   readonly node: PostDto[]
 }

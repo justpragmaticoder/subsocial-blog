@@ -3,7 +3,6 @@ import { EntitiesEnum } from '../../../../libs/common-enums';
 import { IIPFSContent } from '../interfaces';
 
 @Entity(EntitiesEnum.IPFC_CONTENT)
-// @Unique(`UC_${EntitiesEnum.IPFC_CONTENT}_block`, ['block'])
 @Index(`IDX_${EntitiesEnum.IPFC_CONTENT}_block_folderCid`, ['block', 'folderCid'])
 export class IPFSContentEntity implements IIPFSContent {
   @PrimaryGeneratedColumn('increment')

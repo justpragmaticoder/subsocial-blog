@@ -24,39 +24,141 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+It is a small and simple example of using [Nest](https://github.com/nestjs/nest) framework and GraphQL with subsocial API.
+This app is prepared to be run with the help of docker (you will see a multi-staging build realized in dockerfile).
+
+## Requirements
+
+You should have at least node v16.6.2. Also, all configuration variables are stored in .env.app-config.local file. Please, use your own IPFS_AUTH_TOKEN value (IPFS authorization token).
+
+## Manual test
+
+You can play with an app via playground (it is available on http://localhost:5000/playground).
+
+## Important notes
+
+Each post has a relation with its owner.
+That's why the owner should be created first.
+
+Also, there is a dump with a small data portions for tests (installed automatically during docker compose up)
+Enjoy :)
+
+#### Post owner (author) creation sample
+```
+mutation {
+  createOwner(input: { 
+    ownerId: "3rGZ2cUTaCHWgG6z3UL8nFsWvUBt1K5CEeoMXTUVFL2GCZ8q"
+    nickname: "Vasyl",
+  }) {
+    id,
+    ownerId,
+    nickname,
+    createdAtTime,
+    updatedAtTime
+  }
+}
+```
+
+#### Post creation sample
+```
+mutation {
+  createPost(input: { 
+    spaceId: "1", 
+    ownerId: "3rGZ2cUTaCHWgG6z3UL8nFsWvUBt1K5CEeoMXTUVFL2GCZ9q",
+    content: {
+        image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABfQAAAKaCAYAAAB4Gdi/AAAgAElEQVR4XuydB7QVxdZuS0URRTEHUAwgK",
+        body: "Just some test body",
+        title: "Just some test title",
+        tags: ["first_tag", "second_tag"],
+      
+    }
+  }) {
+    spaceId,
+    image,
+    tags,
+    title,
+    id,
+    body,
+    syncedBlock,
+    syncedContentId
+  }
+}
+```
+
+#### Find post owners (authors) sample
+```
+query {
+  findOwners(filter: {}, paging: { limit: 10, offset: 0}) {
+    node {
+      id,
+      ownerId,
+      nickname,
+      createdAtTime,
+      updatedAtTime
+    },
+    totalCount
+  }
+}
+```
+
+#### Find posts sample
+```
+query {
+  findPosts(filter: {}, paging: { limit: 10, offset: 0}) {
+    node {
+      spaceId,
+      image,
+      tags,
+      title,
+      id,
+      body,
+      syncedBlock,
+      syncedContentId
+    },
+    totalCount
+  }
+}
+```
 
 ## Installation
+
+## Running the app in docker.
+#### Just use a command below, all job will be made automatically.
+
+```bash
+$ docker compose --env-file .env.app-config.local up
+```
+
+## Local run without a docker
+#### If you want to run this app on your local machine without docker, you need to comment app container inside docker-compose.yaml file. As well as "network" for db container.
+#### Also, use next variable values for .env.app-config.local file -> DB_HOST=localhost and DB_PORT=6000
+#### Run next command to install packages (there are some very important packages which had some dependency conflicts with new versions of nestjs packages).
 
 ```bash
 $ npm install
 ```
 
-## Running the app
+## Run next command in case of any issues during npm install
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+$ npm install --legacy-peer-deps
 ```
 
-## Test
+## Test (not fully covered yet)
 
 ```bash
 # unit tests
 $ npm run test
 
-# e2e tests
-$ npm run test:e2e
-
 # test coverage
 $ npm run test:cov
 ```
+
+## Things to be added/improved:
+#### 1. Need to add some kind of authentication/authorization process for posts owners (authors)
+#### 2. Need to archive a full coverage by unit tests.
+#### 3. It would be good idea to implement a mechanism to upload all images to some service E.g. minio and return to FE a link to CDN with image instead of base64.
+#### 4. It would be good to implement some FE part for this app.
 
 ## Support
 

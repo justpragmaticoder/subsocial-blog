@@ -13,6 +13,6 @@ export class FindOwnersResponseDto implements IFindOwnersResponse {
   @Field(() => Number)
   readonly totalCount: number;
 
-  @Field(() => OwnerDto)
+  @Field(() => [OwnerDto])
   readonly node: OwnerDto[]
 }
